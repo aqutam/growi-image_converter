@@ -61,9 +61,22 @@ class ImageConverter
   end
 
   def scan_markdown_image_esa(body)
-    matches = body.scan(%r{!\[.+?\]\(https?://img.esa.io/.+?\)})
-    matches.map { |match| MarkdownImage.new match }
+    markdown_images = []
+    markdown_images.push(scan_markdown_image_inline_style(body))
+    markdown_images.push(scan_markdown_image_reference_style(body))
   end
+
+  def scan_markdown_image_inline_style(body)
+    matches = body.scan(%r{!\[.*?\]\(\s*?https?://img.esa.io/.*?(?:\s+?".*?"\s*?)?\)})
+    matches.map { |match| MarkdownImageInlineStyle.new match }
+  end
+
+  def scan_markdown_image_reference_style(body)
+    matches = body.scan(%r{\[.*?\]: https?://img.esa.io/.*?(?: ".*?")?})
+    matches.map { |match| MarkdownImageReferenceStyle.new match }
+  end
+
+  def scan_markdown_image_html_tag_style; end
 
   def get_image_from_esa(markdown_image, tempdir)
     tmp_file = URI.parse(markdown_image.url).open

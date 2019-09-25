@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # Markdown syntax image
-class MarkdownImage
+class MarkdownImageInlineStyle
   def initialize(syntax)
-    match = syntax.match(%r{!\[(?<alt_text>.*?)\]\((?<url>https?://img.esa.io/.*?)(?: "(?<title>.*?)")?\)})
+    match = syntax.match(%r{!\[(?<alt_text>.*?)\]\(\s*?(?<url>https?://img.esa.io/.*?)(?:\s+?"(?<title>.*?)"\s*?)?\)})
 
     @syntax = syntax
     @alt_text = match[:alt_text]

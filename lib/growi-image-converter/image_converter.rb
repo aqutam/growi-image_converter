@@ -2,6 +2,12 @@
 
 # img.esa.io の画像を GROWI にアタッチし直すクラス
 class ImageConverter
+  REGEX_URL_PREFIX_ESA = 'https?://img.esa.io/'
+  REGEX_SPACE_OR_RETURN = '(?:\s+?|\n)'
+  REGEX_PRE_SPACE_OR_RETURN = '(?:\s*?\n)?\s*?'
+  REGEX_POST_SPACE_OR_RETURN = '\s*?(?:\n\s*?)?'
+  REGEX_TITLE = "(?:#{REGEX_SPACE_OR_RETURN}\".*?\")?"
+
   def initialize(client)
     @client = client
   end
@@ -61,22 +67,30 @@ class ImageConverter
   end
 
   def scan_markdown_image_esa(body)
-    markdown_images = []
-    markdown_images.push(scan_markdown_image_inline_style(body))
-    markdown_images.push(scan_markdown_image_reference_style(body))
-  end
+    matches = []
 
-  def scan_markdown_image_inline_style(body)
-    matches = body.scan(%r{!\[.*?\]\(\s*?https?://img.esa.io/.*?(?:\s+?".*?"\s*?)?\)})
-    matches.map { |match| MarkdownImageInlineStyle.new match }
-  end
+    # Image syntax inline
+    matches.concat(body.scan(
+                     /
+                     !\[#{REGEX_PRE_SPACE_OR_RETURN}.*?#{REGEX_POST_SPACE_OR_RETURN}\]
+                     \(#{REGEX_PRE_SPACE_OR_RETURN}
+                     #{REGEX_URL_PREFIX_ESA}.*?\s*?#{REGEX_TITLE}
+                     #{REGEX_POST_SPACE_OR_RETURN}\)
+                     /x
+                   ))
 
-  def scan_markdown_image_reference_style(body)
-    matches = body.scan(%r{\[.*?\]: https?://img.esa.io/.*?(?: ".*?")?})
-    matches.map { |match| MarkdownImageReferenceStyle.new match }
-  end
+    # Image syntax reference-style
+    matches.concat(body.scan(
+                     /
+                     \[#{REGEX_PRE_SPACE_OR_RETURN}.*?#{REGEX_POST_SPACE_OR_RETURN}\]:\s*?#{REGEX_URL_PREFIX_ESA}.*
+                     /x
+                   ))
 
-  def scan_markdown_image_html_tag_style; end
+    # Image syntax img tag
+    matches.concat(body.scan(/<img#{REGEX_SPACE_OR_RETURN}.*?#{REGEX_URL_PREFIX_ESA}.*?>/m))
+
+    matches.map { |match| MarkdownImage.new match }
+  end
 
   def get_image_from_esa(markdown_image, tempdir)
     tmp_file = URI.parse(markdown_image.url).open
@@ -92,13 +106,7 @@ class ImageConverter
   def replace_markdown_image(body, attached_files)
     attached_files.each do |attached_file|
       attached_file_path = '/attachment/' + attached_file.api_return_attached_file.data[:attachment]._id
-      replace = format(
-        '%<syntax>s![%<alt_text>s](%<file_path>s)',
-        syntax: attached_file.markdown_image.syntax,
-        alt_text: attached_file.markdown_image.alt_text,
-        file_path: attached_file_path
-      )
-      body.sub! attached_file.markdown_image.syntax, replace
+      body.sub! attached_file.markdown_image.url, attached_file_path
     end
     body
   end

@@ -3,12 +3,10 @@
 # Markdown syntax image
 class MarkdownImage
   def initialize(syntax)
-    match = syntax.match(%r{!\[(?<alt_text>.*?)\]\((?<url>https?://img.esa.io/.*?)(?: "(?<title>.*?)")?\)})
+    match = syntax.match(%r{(?<url>https?://.*?)(?:\s+?|\n|"|\))})
 
     @syntax = syntax
-    @alt_text = match[:alt_text]
-    @url = match[:url]
-    @title = match[:title]
+    @url = match&.[](:url)
   end
-  attr_accessor :syntax, :alt_text, :url, :title
+  attr_accessor :syntax, :url
 end

@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require 'growi-client'
-require 'rspec/json_matcher'
-require 'json'
+require 'growi/image_converter'
 
-RSpec.configuration.include RSpec::JsonMatcher
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = '.rspec_status'

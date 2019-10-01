@@ -4,9 +4,10 @@ module Growi
   module ImageConverter
     # markdown bodyを扱うクラス
     class Body
+      REGEX_SPACE = '[ \t]'
       REGEX_URL_PREFIX_ESA = 'https?://img.esa.io/'
-      REGEX_SPACE_GE_1_OR_RETURN = '(?:\s+?|\n)'
-      REGEX_SPACE_OR_RETURN = '(?:\s*?\n)?\s*?'
+      REGEX_SPACE_GE_1_OR_RETURN = "(?:#{REGEX_SPACE}+?|\\n)"
+      REGEX_SPACE_OR_RETURN = "(?:#{REGEX_SPACE}*?\\n)?#{REGEX_SPACE}*?"
       REGEX_TITLE = "(?:#{REGEX_SPACE_GE_1_OR_RETURN}\".*?\")?"
 
       def initialize(body)
@@ -22,7 +23,7 @@ module Growi
                          /
                          !\[#{REGEX_SPACE_OR_RETURN}.*?#{REGEX_SPACE_OR_RETURN}\]
                          \(#{REGEX_SPACE_OR_RETURN}
-                         #{REGEX_URL_PREFIX_ESA}.*?\s*?#{REGEX_TITLE}
+                         #{REGEX_URL_PREFIX_ESA}.*?#{REGEX_SPACE}*?#{REGEX_TITLE}
                          #{REGEX_SPACE_OR_RETURN}\)
                          /x
                        ))

@@ -6,8 +6,8 @@ module Growi
     class Body
       REGEX_SPACE = '[ \t]'
       REGEX_URL_PREFIX_ESA = 'https?://img.esa.io/'
-      REGEX_SPACE_GE_1_OR_RETURN = "(?:#{REGEX_SPACE}+?|\\n)"
       REGEX_SPACE_OR_RETURN = "(?:#{REGEX_SPACE}*?\\n)?#{REGEX_SPACE}*?"
+      REGEX_SPACE_GE_1_OR_RETURN = "(?:#{REGEX_SPACE}+?|#{REGEX_SPACE_OR_RETURN})"
       REGEX_TITLE = "(?:#{REGEX_SPACE_GE_1_OR_RETURN}\".*?\")?"
 
       def initialize(body)
@@ -23,7 +23,7 @@ module Growi
                          /
                          !\[#{REGEX_SPACE_OR_RETURN}.*?#{REGEX_SPACE_OR_RETURN}\]
                          \(#{REGEX_SPACE_OR_RETURN}
-                         #{REGEX_URL_PREFIX_ESA}.*?#{REGEX_SPACE}*?#{REGEX_TITLE}
+                         #{REGEX_URL_PREFIX_ESA}.*?#{REGEX_TITLE}
                          #{REGEX_SPACE_OR_RETURN}\)
                          /x
                        ))
@@ -31,7 +31,8 @@ module Growi
         # Image syntax reference-style
         matches.concat(body.scan(
                          /
-                         \[#{REGEX_SPACE_OR_RETURN}.*?#{REGEX_SPACE_OR_RETURN}\]:\s*?#{REGEX_URL_PREFIX_ESA}.*
+                         \[#{REGEX_SPACE_OR_RETURN}.*?#{REGEX_SPACE_OR_RETURN}\]:
+                         #{REGEX_SPACE_OR_RETURN}#{REGEX_URL_PREFIX_ESA}.*
                          /x
                        ))
 

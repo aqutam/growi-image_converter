@@ -27,7 +27,9 @@ module Growi
           begin
             image_file = Growi::ImageConverter::Esa.get_image_from_esa markdown_image.url, tempdir
             attached_file = attach_file image_file
-            attached_files.push(Growi::ImageConverter::AttachedImageFile.new(markdown_image, attached_file))
+            unless attached_file.nil?
+              attached_files.push(Growi::ImageConverter::AttachedImageFile.new(markdown_image, attached_file))
+            end
           rescue StandardError => e
             puts 'PageID: ' + data._id + ', Image URL: ' + markdown_image.url + ', Message: ' + e.message
             next
@@ -36,7 +38,7 @@ module Growi
       end
 
       def attach_file(file)
-        return GApiReturn.new(ok: false, data: nil) if @dry_run
+        return nil if @dry_run
 
         req = GApiRequestAttachmentsAdd.new page_id: data._id, file: file
         api_return = @client.request(req)
@@ -51,20 +53,21 @@ module Growi
       end
 
       def update
-        ## TODO: 1つも更新対象がないとき、updateしない
-        return if @dry_run
+        # TODO: 1つも更新対象がないとき、updateしない
 
-        req = GApiRequestPagesUpdate.new(
-          page_id: data._id,
-          revision_id: data.revision._id,
-          body: body,
-          grant: data.grant
-        )
-        api_return = @client.request(req)
+        unless @dry_run
+          req = GApiRequestPagesUpdate.new(
+            page_id: data._id,
+            revision_id: data.revision._id,
+            body: body,
+            grant: data.grant
+          )
+          api_return = @client.request(req)
 
-        raise StandardError, 'Failed to update page.' unless api_return.ok
+          raise StandardError, 'Failed to update page.' unless api_return.ok
+        end
 
-        puts 'PageID: ' + data._id + ', Result: Converted' + ', Message: ' + e.message
+        puts 'PageID: ' + data._id + ', Result: Converted'
       end
     end
   end

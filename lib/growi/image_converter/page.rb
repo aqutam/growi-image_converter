@@ -53,19 +53,25 @@ module Growi
       end
 
       def update
-        # TODO: 1つも更新対象がないとき、updateしない
-
-        unless @dry_run
-          req = GApiRequestPagesUpdate.new(
-            page_id: data._id,
-            revision_id: data.revision._id,
-            body: body,
-            grant: data.grant
-          )
-          api_return = @client.request(req)
-
-          raise StandardError, 'Failed to update page.' unless api_return.ok
+        if @dry_run
+          puts 'PageID: ' + data._id + ', Result: Converted'
+          return
         end
+
+        if attached_files.empty?
+          puts 'PageID: ' + data._id + ', Result: Not converted'
+          return
+        end
+
+        req = GApiRequestPagesUpdate.new(
+          page_id: data._id,
+          revision_id: data.revision._id,
+          body: body,
+          grant: data.grant
+        )
+        api_return = @client.request(req)
+
+        raise StandardError, 'Failed to update page.' unless api_return.ok
 
         puts 'PageID: ' + data._id + ', Result: Converted'
       end

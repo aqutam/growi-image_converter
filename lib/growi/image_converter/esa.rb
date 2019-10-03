@@ -35,7 +35,7 @@ module Growi
               page.replace_markdown_image
               page.update
             rescue StandardError => e
-              puts 'PageID: ' + page_summary._id + ', Result: Not converted' + ', Message: ' + e.message
+              puts 'PageID: ' + page_summary._id + ', Result: Failed to convert' + ', Message: ' + e.message
               next
             end
           end

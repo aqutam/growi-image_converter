@@ -42,12 +42,9 @@ module Growi
         matches.map { |match| Growi::ImageConverter::MarkdownImage.new match }
       end
 
-      def replace_markdown_image(attached_files)
-        attached_files.each do |attached_file|
-          attached_file_path = '/attachment/' + attached_file.api_return_attached_file.data[:attachment]._id
-          body.sub! attached_file.markdown_image.url, attached_file_path
-        end
-        body
+      def replace_markdown_image(attached_file)
+        attached_file_path = '/attachment/' + attached_file.api_return_attached_file.data[:attachment]._id
+        body.sub! attached_file.markdown_image.url, attached_file_path
       end
     end
   end

@@ -11,9 +11,6 @@ module Growi
           image_file.write(tmp_file.read)
           image_file.rewind
           image_file
-        rescue StandardError => e
-          print url, ': ', e, "\n"
-          nil
         end
       end
 
@@ -22,25 +19,38 @@ module Growi
       end
 
       def convert(dry_run: true)
-        get_pages.data.each do |page_summary|
+        begin
+          page_list = get_page_list
+        rescue StandardError => e
+          puts 'Error: ' + e.message
+          exit 1
+        end
+
+        page_list.each do |page_summary|
           Dir.mktmpdir do |tempdir|
-            page = Growi::ImageConverter::Page.new(page_summary._id, @client, dry_run: dry_run)
-            markdown_images = page.body.scan_markdown_image_esa
-            page.attach_files(markdown_images, tempdir)
-            page.replace_markdown_image
-            page.update
-            exit
+            begin
+              page = Growi::ImageConverter::Page.new(page_summary._id, @client, dry_run: dry_run)
+              markdown_images = page.body.scan_markdown_image_esa
+              page.attach_files(markdown_images, tempdir)
+              page.replace_markdown_image
+              page.update
+            rescue StandardError => e
+              puts 'PageID: ' + page_summary._id + ', Result: Not converted' + ', Message: ' + e.message
+              next
+            end
           end
         end
       end
 
       private
 
-      def get_pages(path_exp = '/')
+      def get_page_list(path_exp = '/')
         req = GApiRequestPagesList.new path_exp: path_exp
-        @client.request(req)
+        api_return = @client.request(req)
 
-        # TODO: レスポンスがNGだった場合raise
+        raise StandardError, 'Failed to get page list.' unless api_return.ok
+
+        api_return.data
       end
     end
   end

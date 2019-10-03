@@ -10,6 +10,8 @@ module Growi
       REGEX_SPACE_GE_1_OR_RETURN = "(?:#{REGEX_SPACE}+?|#{REGEX_SPACE_OR_RETURN})"
       REGEX_TITLE = "(?:#{REGEX_SPACE_GE_1_OR_RETURN}\".*?\")?"
 
+      FILE_PATH_PREFIX = '/attachment/'
+
       def initialize(body)
         @body = body
       end
@@ -43,7 +45,7 @@ module Growi
       end
 
       def replace_markdown_image(attached_file)
-        attached_file_path = '/attachment/' + attached_file.api_return_attached_file.data[:attachment]._id
+        attached_file_path = FILE_PATH_PREFIX + attached_file.data[:attachment]._id
         body.sub! attached_file.markdown_image.url, attached_file_path
       end
     end

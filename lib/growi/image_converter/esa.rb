@@ -31,7 +31,12 @@ module Growi
             begin
               page = Growi::ImageConverter::Page.new(page_summary._id, @client, dry_run: dry_run)
               markdown_images = page.body.scan_markdown_image_esa
-              page.attach_files(markdown_images, tempdir)
+
+              markdown_images_group_by_url = {}
+              markdown_images.each do |markdown_image|
+                (markdown_images_group_by_url[markdown_image.url] ||= []).push(markdown_image)
+              end
+              page.attach_files(markdown_images_group_by_url, tempdir)
               page.replace_markdown_image
               page.update
             rescue StandardError => e

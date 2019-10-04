@@ -11,6 +11,10 @@ module Growi
         @url = match&.[](:url)
       end
       attr_accessor :syntax, :url
+
+      def replace_url(new_url)
+        syntax.sub url, new_url
+      end
     end
   end
 end

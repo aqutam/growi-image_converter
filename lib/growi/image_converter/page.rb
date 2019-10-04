@@ -22,23 +22,24 @@ module Growi
         api_return.data
       end
 
-      def attach_files(markdown_images, tempdir)
-        markdown_images.each do |markdown_image|
+      def attach_files(markdown_images_group_by_url, tempdir)
+        markdown_images_group_by_url.each do |url, markdown_images|
           begin
-            image_file = Growi::ImageConverter::Esa.get_image_from_esa markdown_image.url, tempdir
+            image_file = Growi::ImageConverter::Esa.get_image_from_esa url, tempdir
             attached_file = attach_file image_file
-            unless attached_file.nil?
-              attached_files.push(Growi::ImageConverter::AttachedImageFile.new(markdown_image, attached_file))
-            end
+            attached_files.push(Growi::ImageConverter::AttachedImageFile.new(markdown_images, attached_file))
           rescue StandardError => e
-            puts 'PageID: ' + data._id + ', Image URL: ' + markdown_image.url + ', Message: ' + e.message
+            puts 'PageID: ' + data._id + ', Image URL: ' + url + ', Message: ' + e.message
             next
           end
         end
       end
 
       def attach_file(file)
-        return nil if @dry_run
+        if @dry_run
+          attachment_params = { _id: 'dry-run-' + data._id + '-' + SecureRandom.hex(10), creator: 'dry-run-user' }
+          return { attachment: GrowiAttachment.new(attachment_params) }
+        end
 
         req = GApiRequestAttachmentsAdd.new page_id: data._id, file: file
         api_return = @client.request(req)

@@ -46,7 +46,9 @@ module Growi
 
       def replace_markdown_image(attached_file)
         attached_file_path = FILE_PATH_PREFIX + attached_file.data[:attachment]._id
-        body.sub! attached_file.markdown_image.url, attached_file_path
+        attached_file.markdown_images.each do |markdown_image|
+          body.sub! markdown_image.syntax, markdown_image.replace_url(attached_file_path)
+        end
       end
     end
   end

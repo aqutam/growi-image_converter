@@ -54,13 +54,13 @@ module Growi
       end
 
       def update
-        if @dry_run
-          puts 'PageID: ' + data._id + ', Result: Converted'
+        if attached_files.empty?
+          puts 'PageID: ' + data._id + ', Result: Through'
           return
         end
 
-        if attached_files.empty?
-          puts 'PageID: ' + data._id + ', Result: Not converted'
+        if @dry_run
+          puts 'PageID: ' + data._id + ', Result: Converted'
           return
         end
 

@@ -14,8 +14,9 @@ module Growi
 
       def initialize(body)
         @body = body
+        @markdown_images = []
       end
-      attr_accessor :body
+      attr_accessor :body, :markdown_images
 
       def scan_markdown_image_esa
         matches = []
@@ -41,7 +42,15 @@ module Growi
         # Image syntax img tag
         matches.concat(body.scan(/<img#{REGEX_SPACE_GE_1_OR_RETURN}.*?#{REGEX_URL_PREFIX_ESA}.*?>/m))
 
-        matches.map { |match| Growi::ImageConverter::MarkdownImage.new match }
+        @markdown_images = matches.map { |match| Growi::ImageConverter::MarkdownImage.new match }
+      end
+
+      def group_by_url
+        group_by_url = {}
+        markdown_images.each do |markdown_image|
+          (group_by_url[markdown_image.url] ||= []).push(markdown_image)
+        end
+        group_by_url
       end
 
       def replace_markdown_image(attached_file)

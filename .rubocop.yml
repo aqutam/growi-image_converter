@@ -11,7 +11,7 @@ Metrics/BlockLength:
     - 'spec/**/*.rb'
 
 Metrics/MethodLength:
-  Max: 25
+  Max: 27
 
 Metrics/AbcSize:
   Max: 30

@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift("#{__dir__}/../lib")
+
+require 'optparse'
+require 'growi-client'
+require 'growi/image_converter'
+
+def run
+  options = {}
+  options[:dry_run] = true
+
+  OptionParser.new do |opt|
+    opt.banner = 'Usage: growi-image_converter [options]'
+    opt.version = Growi::ImageConverter::VERSION
+    opt.on('-d', '--no-dry-run', 'Perform the conversion') do
+      options[:dry_run] = false
+    end
+  end.parse!
+
+  if ENV['GROWI_URL'].nil?
+    puts 'Error: growi_url is required.'
+    puts
+    puts 'Export this environment:'
+    puts '$ export GROWI_URL=https://*****.growi.cloud'
+    exit 1
+  end
+
+  if ENV['GROWI_ACCESS_TOKEN'].nil?
+    puts 'Error: access_token is required.'
+    puts
+    puts 'Export this environment:'
+    puts '$ export GROWI_ACCESS_TOKEN=0123456789abcdef0123456789abcdef0123456789ab'
+    exit 1
+  end
+
+  puts '[DRY RUN MODE]' if options[:dry_run]
+
+  client = GrowiClient.new growi_url: ENV['GROWI_URL'], access_token: ENV['GROWI_ACCESS_TOKEN']
+  image_converter = Growi::ImageConverter::Esa.new client
+  image_converter.convert dry_run: options[:dry_run]
+end
+
+run

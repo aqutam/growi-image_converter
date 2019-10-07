@@ -7,52 +7,74 @@ module Growi
       def initialize(page_id, client, dry_run: true)
         @dry_run = dry_run
         @client = client
-        @page = get(page_id)
-        @body = Body.new(page.data.revision.body)
+        @data = get(page_id)
+        @body = Body.new(data.revision.body)
         @attached_files = []
       end
-      attr_accessor :page, :body, :attached_files
+      attr_accessor :data, :body, :attached_files
 
       def get(page_id)
         req = GApiRequestPagesGet.new page_id: page_id
-        @client.request(req)
+        api_return = @client.request(req)
+
+        raise StandardError, 'Failed to get page data.' unless api_return.ok
+
+        api_return.data
       end
 
-      def attach_files(tempdir)
-        body.scan_markdown_image_esa.each do |markdown_image|
-          image_file = Growi::ImageConverter::Esa.get_image_from_esa markdown_image, tempdir
-          next if image_file.nil?
-
-          api_return_attached_file = attach_file image_file
-          if api_return_attached_file.ok
-            attached_files.push(Growi::ImageConverter::AttachedImageFile.new(markdown_image, api_return_attached_file))
+      def attach_files(markdown_images_group_by_url, tempdir)
+        markdown_images_group_by_url.each do |url, markdown_images|
+          begin
+            image_file = Growi::ImageConverter::Esa.get_image_from_esa url, tempdir
+            attached_file = attach_file image_file
+            attached_files.push(Growi::ImageConverter::AttachedImageFile.new(markdown_images, attached_file))
+          rescue StandardError => e
+            puts 'PageID: ' + data._id + ', Image URL: ' + url + ', Message: ' + e.message
+            next
           end
         end
       end
 
       def attach_file(file)
-        page_id = page.data._id
-        print page_id, ' ', file, "\n"
-        return GApiReturn.new(ok: false, data: nil) if @dry_run
+        if @dry_run
+          attachment_params = { _id: 'dry-run-' + data._id + '-' + SecureRandom.hex(10), creator: 'dry-run-user' }
+          return { attachment: GrowiAttachment.new(attachment_params) }
+        end
 
-        req = GApiRequestAttachmentsAdd.new page_id: page_id, file: file
-        @client.request(req)
+        req = GApiRequestAttachmentsAdd.new page_id: data._id, file: file
+        api_return = @client.request(req)
+
+        raise StandardError, 'Failed to atach file.' unless api_return.ok
+
+        api_return.data
       end
 
       def replace_markdown_image
-        body.replace_markdown_image(attached_files)
+        attached_files.each { |attached_file| body.replace_markdown_image(attached_file) }
       end
 
       def update
-        ## TODO: 1つも更新対象がないとき、updateしない
-        return if @dry_run
+        if attached_files.empty?
+          puts 'PageID: ' + data._id + ', Result: Through'
+          return
+        end
 
-        page_id = page.data._id
-        grant = page.data.grant
-        revision_id = page.data.revision._id
+        if @dry_run
+          puts 'PageID: ' + data._id + ', Result: Converted'
+          return
+        end
 
-        req = GApiRequestPagesUpdate.new page_id: page_id, revision_id: revision_id, body: body, grant: grant
-        @client.request(req)
+        req = GApiRequestPagesUpdate.new(
+          page_id: data._id,
+          revision_id: data.revision._id,
+          body: body,
+          grant: data.grant
+        )
+        api_return = @client.request(req)
+
+        raise StandardError, 'Failed to update page.' unless api_return.ok
+
+        puts 'PageID: ' + data._id + ', Result: Converted'
       end
     end
   end

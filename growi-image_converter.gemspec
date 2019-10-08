@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['tamtam.okinawa@gmail.com']
 
   spec.summary       = 'GROWI image converter'
-  spec.description   = 'growi-image_converter is a converter that converts esa.io image to growi.'
+  spec.description   = 'growi-image_converter is a converter that converts esa.io images to GROWI.'
   spec.homepage      = 'https://github.com/aqutam/growi-image-converter-esa'
   spec.license       = 'MIT'
 

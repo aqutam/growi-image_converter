@@ -1,8 +1,10 @@
 # Growi::ImageConverter
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/growi/image_converter`. To experiment with that code, run `bin/console` for an interactive prompt.
+growi-image_converter is a converter that converts esa.io images to GROWI.
 
-TODO: Delete this and the text above, and describe your gem
+GROWI has the ability to import data from esa.io. However, images are not converted. Therefore, convert using this growi-image_converter.
+
+You need to create an AWS S3 bucket in advance and set it to GROWI.
 
 ## Installation
 
@@ -22,7 +24,20 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Export these environments.
+
+```
+$ export GROWI_URL=https://*****.growi.cloud
+$ export GROWI_ACCESS_TOKEN=0123456789abcdef0123456789abcdef0123456789ab
+```
+
+Perform a trial run with no changes made:
+
+    $ growi-image_converter
+
+Perform the conversion:
+
+    $ growi-image_converter -d
 
 ## Development
 
@@ -32,7 +47,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/growi-image_converter.
+Bug reports and pull requests are welcome on GitHub at https://github.com/aqutam/growi-image_converter.
 
 ## License
 

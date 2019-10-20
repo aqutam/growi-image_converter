@@ -67,7 +67,7 @@ module Growi
         req = GApiRequestPagesUpdate.new(
           page_id: data._id,
           revision_id: data.revision._id,
-          body: body,
+          body: body.body,
           grant: data.grant
         )
         api_return = @client.request(req)
